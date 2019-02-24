@@ -3,39 +3,44 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.IO;
 
 namespace Entropy
 {
     class Program
     {
-        static public string WriteText(string file)
+        static public string ToClearText(string text)
         {
-            Console.WriteLine("\t******Cчитываем весь файл*******\n");
-            StreamReader sr = new StreamReader(file, Encoding.GetEncoding(1251));//кодировка Windows-1251
-            return sr.ReadToEnd();
+            string ClearText= text.Replace(" ", string.Empty).Trim().ToLower();
+            var matches = Regex.Matches(ClearText, @"[абвгдежзийклмнопрстуфхцчшщыьэюя]+").Cast<Match>().Select(i => i.Value).ToArray();
+            ClearText = String.Join("", matches);
+            return ClearText;
         }
-        static void Main(string[] args)
+
+        static public void MonogramFrequency(string text)
         {
-            string EncryptedFile = @"C:\Users\burlu\source\repos\Entropy\Encrypted.txt";
-            Console.WriteLine(WriteText(EncryptedFile));
-
-            char[] Letters = File.ReadAllText(@"C:\Users\burlu\source\repos\Entropy\Encrypted.txt", Encoding.GetEncoding(1251)).Where(v => v != ' ').ToArray();//записываем символы (кроме пробелов) в массив --->получаем сплошную строку 
-            var distinctLetters = Letters.Distinct().ToArray();//возвращаем неповторяющиеся буквы строки 
-            Console.WriteLine("\n \t******Редаченый текст******");
-            Console.WriteLine(Letters);
-            var n = Letters.GroupBy(v => v).Select(v => v.Count()).ToArray();//массивы различных символов и их количества
-            Console.WriteLine($"\nВ файл входят символы:\n{String.Join(Environment.NewLine, distinctLetters)}");//выводим различные символы
-
+            char[] Letters = text.ToCharArray();
+            Letters = Letters.Where(v => v != ' ').ToArray();
+            var distinctLetters = Letters.Distinct().ToArray();
+            var n = Letters.GroupBy(v => v).Select(v => v.Count()).ToArray();
+            int TextLength = Letters.Length;
+            Console.WriteLine(TextLength);
             Console.WriteLine("\nВ файл входят символы:");
             for (int i = 0; i < distinctLetters.Length; i++)
-                Console.WriteLine($"{distinctLetters[i]} - {n[i]}");//выводим различные символы и их количество
+                Console.WriteLine($"{distinctLetters[i]} - {(double)n[i]/(double)TextLength}");
+        }
 
-
-            
-
+        static void Main(string[] args)
+        {
+            string DirtyText = File.ReadAllText(@"C:\Users\burlu\source\repos\Entropy\Encrypted.txt", Encoding.GetEncoding(1251));
+            //Console.WriteLine("\t*******Чистый текст*******\n"+ ToClearText(DirtyText));
+            string ClearText=ToClearText(DirtyText);
+            MonogramFrequency(ClearText);
             Console.ReadKey();
-            
+            Console.ReadKey();
+            Console.ReadKey();
+
         }
     }
 }
